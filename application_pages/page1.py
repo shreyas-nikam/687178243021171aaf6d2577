@@ -213,11 +213,12 @@ def run_page1():
         height=500
     )
     # Color bars for Individual_Risk_Exposure based on Risk Status
+    import numpy as np
     for i, bu in enumerate(final_df['Business Unit']):
         status = final_df.loc[final_df['Business Unit'] == bu, 'Risk Status'].iloc[0]
         fig_bar.update_traces(
-            marker_color=rag_colors[status],
-            selector=dict(name='Individual_Risk_Exposure', x=[bu])
+            marker_color=[rag_colors[status]],
+            selector=lambda t: t.name == 'Individual_Risk_Exposure'
         )
 
     # Update legend names for clarity
