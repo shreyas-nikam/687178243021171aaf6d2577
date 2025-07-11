@@ -5,49 +5,31 @@ st.sidebar.image("https://www.quantuniversity.com/assets/img/logo5.jpg")
 st.sidebar.divider()
 st.title("QuLab")
 st.divider()
-st.markdown("""
-In this lab, we explore the crucial concepts of **Risk Appetite** and **Risk Allocation** within an organization.
-Understanding how a firm defines its overall risk appetite and then cascades it down to individual business units is
-fundamental for effective risk management and strategic decision-making.
+st.markdown(r"""
+In this lab, we delve into the foundational concepts of **Risk Appetite and Allocation**. Understanding how an organization defines, cascades, and monitors its risk appetite is crucial for effective risk management. This application provides an interactive environment to:
 
-### Learning Outcomes:
-- Define and set a firm's top-level `Board Appetite`.
-- Simulate the hierarchical allocation of risk appetite across various business units.
-- Understand the aggregation of individual risk exposures and their comparison against allocated limits.
-- Visualize risk status using a clear **Red, Amber, Green (RAG)** system.
-- Evaluate the `Total Firm Risk Profile` against the `Board Appetite`.
+*   **Define Board Appetite:** Set the overarching risk tolerance for the entire firm.
+*   **Allocate Appetite:** Distribute the firm's total risk appetite across various business units.
+*   **Monitor Individual Exposures:** Compare actual risk exposures against allocated limits.
+*   **Visualize Risk Status:** Use a Red, Amber, Green (RAG) system to highlight units within or exceeding their risk boundaries.
+*   **Aggregate Firm-wide Risk:** See how individual unit exposures contribute to the total firm risk profile.
 
-### Application Features:
-- **Interactive Inputs:** Adjust `Board Appetite` and `Allocation Percentages` in real-time.
-- **Dynamic Visualizations:** See immediate updates in tables and charts (Bar Chart, Treemap) as inputs change.
-- **Risk Status Monitoring:** Instant feedback on whether business units are within, nearing, or exceeding their risk limits.
-- **Comprehensive Summary:** A clear overview of the firm's total risk profile against its strategic appetite.
+Through this interactive tool, you can explore "what-if" scenarios by adjusting key parameters and observing their immediate impact on risk allocation and status. The goal is to provide a clear and intuitive understanding of how risk appetite frameworks operate in practice, bridging strategic objectives with operational realities.
 
-### Underlying Concepts:
-- **Board Appetite:** The maximum level of risk a firm is willing to accept to achieve its strategic objectives.
-- **Risk Allocation:** The process of distributing the overall Board Appetite to different segments, departments, or business units.
-- **Individual Risk Exposure:** The actual or estimated losses incurred by a specific business unit due to various risks.
-- **Risk Tolerance:** The acceptable deviation from the allocated appetite, often expressed as a factor or absolute amount.
-- **RAG Status:** A traffic-light system (Red, Amber, Green) used for quick visual assessment of risk performance.
-
-This application provides a practical, hands-on tool to interact with these concepts and observe their interplay.
+We will be covering these topics through three interactive pages:
+*   **Page 1: Risk Appetite & Allocation Modeler:** The core simulation environment for defining, allocating, and monitoring risk appetite.
+*   **Page 2: Types of Risk:** An overview of different categories of risk faced by financial institutions.
+*   **Page 3: Basic VaR Calculation:** An introduction to Value at Risk (VaR) as a key risk measure.
 """)
-# Your code starts here
-page = st.sidebar.selectbox(label="Navigation", options=["Risk Appetite & Allocation Modeler (Page 1)", "Page 2", "Page 3"])
 
-if page == "Risk Appetite & Allocation Modeler (Page 1)":
-    from application_pages.page1 import run_page
-    run_page()
-elif page == "Page 2":
-    # Placeholder for Page 2
-    st.markdown("""
-    ## Page 2 - Coming Soon!
-    This page is a placeholder for future features related to risk modeling.
-    """)
-elif page == "Page 3":
-    # Placeholder for Page 3
-    st.markdown("""
-    ## Page 3 - Coming Soon!
-    This page is a placeholder for future features related to risk analysis.
-    """)
-# Your code ends
+page = st.sidebar.selectbox(label="Navigation", options=["Risk Appetite & Allocation Modeler", "Types of Risk", "Basic VaR Calculation"])
+
+if page == "Risk Appetite & Allocation Modeler":
+    from application_pages.page1 import run_page1
+    run_page1()
+elif page == "Types of Risk":
+    from application_pages.page2 import run_page2
+    run_page2()
+elif page == "Basic VaR Calculation":
+    from application_pages.page3 import run_page3
+    run_page3()
