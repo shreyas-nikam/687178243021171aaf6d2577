@@ -4,17 +4,15 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-# 4.2. Synthetic Data Generation
-@st.cache_data
 def generate_synthetic_data():
-    """Generates a pandas.DataFrame with synthetic data."""
+    \"\"\"Generates a pandas.DataFrame with synthetic data.\"\"\"
     num_rows = 100
     business_units = ['BU_A', 'BU_B', 'BU_C', 'BU_D']
     business_unit_data = np.random.choice(business_units, num_rows)
     individual_risk_exposure_data = np.random.normal(loc=50000, scale=20000, size=num_rows)
     individual_risk_exposure_data = np.abs(individual_risk_exposure_data)
     risk_tolerance_data = np.random.normal(loc=0.7, scale=0.2, size=num_rows)
-    risk_tolerance_data = np.clip(risk_tolerance_data, 0.1, 1.0) # Ensure tolerance is between 0.1 and 1.0
+    risk_tolerance_data = np.clip(risk_tolerance_data, 0.1, 1.0)
     df = pd.DataFrame({
         "Business Unit": business_unit_data,
         "Individual Risk Exposure": individual_risk_exposure_data,
@@ -22,9 +20,8 @@ def generate_synthetic_data():
     })
     return df
 
-# 4.3. Validation of Allocation Percentages
 def validate_allocations(percentages):
-    """Ensures allocation percentages sum to 100% and are non-negative."""
+    \"\"\"Ensures allocation percentages sum to 100% and are non-negative.\"\"\"
     epsilon = 1e-6
     total = sum(percentages)
     if not all(p >= 0 for p in percentages):
@@ -33,19 +30,16 @@ def validate_allocations(percentages):
         raise ValueError("Allocation percentages must sum to 100%.")
     return None
 
-# 4.4. Calculation of Allocated Appetite
 def calculate_allocated_appetite(board_appetite, allocation_percentages):
-    """Computes the monetary Allocated Appetite for each business unit."""
+    \"\"\"Computes the monetary Allocated Appetite for each business unit.\"\"\"
     return [board_appetite * percentage / 100 for percentage in allocation_percentages]
 
-# 4.5. Aggregation of Total Firm Risk Profile
 def aggregate_firm_risk(individual_exposures):
-    """Sums individual risk exposures to yield the total firm risk profile."""
-    return sum(individual_exposures) if individual_exposures else 0
+    \"\"\"Sums individual risk exposures to yield the total firm risk profile.\"\"\"
+    return sum(individual_exposures) if individual_exposures.any() else 0
 
-# 4.6. Determination of Risk Status (RAG Logic)
 def determine_risk_status(exposure, allocated_appetite, tolerance):
-    """Applies RAG logic to determine risk status."""
+    \"\"\"Applies RAG logic to determine risk status.\"\"\"
     if exposure <= allocated_appetite:
         return 'Green'
     elif exposure <= tolerance: # This implies allocated_appetite < exposure <= tolerance
@@ -53,266 +47,236 @@ def determine_risk_status(exposure, allocated_appetite, tolerance):
     else: # This implies tolerance < exposure
         return 'Red'
 
-def run_page():
-    st.header("Risk Appetite & Allocation Modeler")
-    st.markdown("""
-    This interactive tool allows you to simulate and visualize how a firm's overall risk appetite
-    is cascaded down to individual business units and how their actual risk exposures compare
-    against these allocated limits.
-    """)
+def run_page1():
+    st.title("Risk Appetite & Allocation Modeler")
 
-    st.markdown("""
-    ### 1. Define Board Appetite
-    The `Board Appetite` represents the maximum acceptable annual operational loss for the entire firm.
-    """)
-    # 2.2. Input Widgets and Controls - Board Appetite
+    st.markdown(r\"\"\"
+    Welcome to the **Risk Appetite & Allocation Modeler**! This interactive tool allows you to simulate how a firm's overall risk appetite is defined, cascaded down to individual business units, and then monitored against actual risk exposures.
+
+    ### Learning Outcomes:
+    *   Understand the concept of **Board Appetite** and its significance.
+    *   Learn how **Risk Appetite** is allocated across different business units.
+    *   Visualize the comparison between **Individual Risk Exposures** and **Allocated Appetite/Tolerance**.
+    *   Interpret **Risk Status** using a Red, Amber, Green (RAG) system.
+    *   See how individual unit risks aggregate to form the **Total Firm Risk Profile**.
+
+    ### Core Concepts:
+    *   **Board Appetite:** The maximum level of risk a firm is willing to accept to achieve its strategic objectives.
+    *   **Allocated Appetite:** The portion of the Board Appetite assigned to a specific business unit or function.
+    *   **Individual Risk Exposure:** The actual risk incurred by a business unit (e.g., operational losses, credit defaults).
+    *   **Risk Tolerance Factor:** A multiplier applied to Allocated Appetite to determine the Absolute Risk Tolerance, allowing for some buffer beyond the strict appetite limit before reaching a critical state.
+    *   **Absolute Risk Tolerance:** The maximum acceptable exposure for a business unit, derived from its Allocated Appetite and Risk Tolerance Factor.
+
+    The primary formula for **Allocated Appetite** is:
+    $$\text{Allocated Appetite}_i = \text{Board Appetite} \times \frac{\text{Allocation Percentage}_i}{100}$$
+
+    The **Absolute Risk Tolerance** for each unit is calculated as:
+    $$\text{Absolute Risk Tolerance}_i = \text{Allocated Appetite}_i \times \text{Risk Tolerance Factor}_i$$
+
+    The **Total Firm Risk Profile** is the sum of all individual risk exposures:
+    $$\text{Total Firm Risk Profile} = \sum_{i=1}^{n} \text{Individual Risk Exposure}_i$$
+
+    The **Risk Status** is determined using the following RAG (Red, Amber, Green) logic:
+    *   If $\text{exposure} \le \text{allocated\_appetite}$, status is 'Green'.
+    *   If $\text{allocated\_appetite} < \text{exposure} \le \text{tolerance}$, status is 'Amber'.
+    *   If $\text{exposure} > \text{tolerance}$, status is 'Red'.
+    \"\"\"
+    )
+
+    st.divider()
+
+    st.header("1. Define Board Appetite")
     board_appetite = st.slider(
-        "Set Board Appetite (in millions of $)",
+        "Set Board Appetite (in millions $)",
         min_value=10.0,
-        max_value=100.0,
-        value=50.0,
+        max_value=500.0,
+        value=100.0,
         step=5.0,
         help="Set the maximum acceptable annual operational loss for the entire firm."
-    )
-    board_appetite_actual = board_appetite * 1_000_000 # Convert to actual value for calculations
+    ) * 1_000_000 # Convert to actual millions
 
-    st.markdown("""
-    ### 2. Cascading Allocation Percentages
-    Allocate a percentage of the `Board Appetite` to each business unit.
-    The sum of all allocation percentages **must equal 100%**.
-    """)
+    st.header("2. Cascading Allocation Percentages")
+    st.markdown("Allocate a percentage of the Board Appetite to each business unit. **The sum must equal 100%.**")
 
-    business_units_list = ['Retail Banking', 'Investment Banking', 'Asset Management', 'IT Operations']
-    initial_allocations = {'Retail Banking': 30, 'Investment Banking': 40, 'Asset Management': 15, 'IT Operations': 15}
-
-    allocation_percentages = {}
-    cols = st.columns(len(business_units_list))
-    for i, bu in enumerate(business_units_list):
-        with cols[i]:
-            allocation_percentages[bu] = st.number_input(
-                f"Allocation for {bu} (%)",
-                min_value=0,
-                max_value=100,
-                value=initial_allocations.get(bu, 0),
-                step=1,
-                key=f"alloc_{bu}",
-                help="Allocate a percentage of the Board Appetite to this business unit."
-            )
-
-    current_total_allocation = sum(allocation_percentages.values())
-    st.info(f"Current Total Allocation: {current_total_allocation}%")
-
-    try:
-        validate_allocations(list(allocation_percentages.values()))
-        st.success("Allocation percentages sum to 100%! Ready for calculations.")
-        allocation_valid = True
-    except ValueError as e:
-        st.error(f"Validation Error: {e}")
-        st.warning("Please adjust allocation percentages to sum to 100%.")
-        allocation_valid = False
-
-    st.markdown("""
-    ### 3. Individual Risk Exposure & Tolerance
-    View or override the simulated individual risk exposure and tolerance factor for each unit.
-    """)
-
-    # Data Preparation
-    simulated_data = generate_synthetic_data()
+    # Business units mapping
     bu_mapping = {
         'BU_A': 'Retail Banking',
         'BU_B': 'Investment Banking',
         'BU_C': 'Asset Management',
         'BU_D': 'IT Operations'
     }
+    business_units_list = list(bu_mapping.values())
+
+    allocation_percentages = {}
+    cols = st.columns(len(business_units_list))
+    for i, bu in enumerate(business_units_list):
+        with cols[i]:
+            allocation_percentages[bu] = st.number_input(
+                f"{bu} (%)",
+                min_value=0.0,
+                max_value=100.0,
+                value=25.0, # Initial equal allocation
+                step=1.0,
+                key=f"alloc_{bu}",
+                help=f"Percentage of Board Appetite allocated to {bu}."
+            )
+
+    current_allocations = list(allocation_percentages.values())
+    try:
+        validate_allocations(current_allocations)
+        st.success("Allocation percentages sum to 100%.")
+    except ValueError as e:
+        st.error(f"Allocation Error: {e}")
+        st.stop() # Stop execution if allocations are invalid
+
+    st.header("3. Individual Risk Exposure & Tolerance")
+    st.markdown("View or override the simulated individual risk exposure and tolerance factor for each unit. (e.g., actual annual losses).")
+
+    # Generate synthetic data and aggregate
+    simulated_data = generate_synthetic_data()
     simulated_data['Business Unit'] = simulated_data['Business Unit'].map(bu_mapping)
 
-    # Aggregate Individual Risk Exposure and Risk Tolerance Factor per business unit
     bu_summary = simulated_data.groupby('Business Unit').agg(
         Individual_Risk_Exposure=('Individual Risk Exposure', 'mean'),
         Risk_Tolerance_Factor=('Risk Tolerance Factor', 'mean')
     ).reset_index()
 
-    # Ensure all expected business units are present in bu_summary
+    # Ensure all expected business units are present, even if no synthetic data for them
+    # (This ensures input widgets are created for all units)
     for bu in business_units_list:
         if bu not in bu_summary['Business Unit'].values:
-            bu_summary = pd.concat([bu_summary, pd.DataFrame([{'Business Unit': bu, 'Individual_Risk_Exposure': 0, 'Risk_Tolerance_Factor': 0}])], ignore_index=True)
-    bu_summary = bu_summary.set_index('Business Unit').loc[business_units_list].reset_index() # Reorder
+            bu_summary = pd.concat([bu_summary, pd.DataFrame([{'Business Unit': bu, 'Individual_Risk_Exposure': 0, 'Risk_Tolerance_Factor': 0.7}])], ignore_index=True)
+    bu_summary = bu_summary.set_index('Business Unit').reindex(business_units_list).reset_index() # Maintain order
 
-    # Optional User Override for Individual Risk Exposure
-    user_overrides = {}
-    for i, bu in enumerate(business_units_list):
+    # User override for Individual Risk Exposure
+    user_exposures = {}
+    user_tolerance_factors = {}
+    for bu in business_units_list:
+        default_exposure = bu_summary[bu_summary['Business Unit'] == bu]['Individual_Risk_Exposure'].iloc[0]
+        default_tolerance_factor = bu_summary[bu_summary['Business Unit'] == bu]['Risk_Tolerance_Factor'].iloc[0]
+
         col1, col2 = st.columns(2)
         with col1:
-            default_exposure = bu_summary[bu_summary['Business Unit'] == bu]['Individual_Risk_Exposure'].iloc[0]
-            user_overrides[bu] = st.number_input(
-                f"Override Exposure for {bu} ($)",
-                min_value=0,
-                value=int(default_exposure),
-                step=1000,
-                key=f"override_exp_{bu}",
-                help=f"View or override the simulated individual risk exposure for {bu} (e.g., actual annual losses)."
+            user_exposures[bu] = st.number_input(
+                f"Override {bu} Exposure ($)",
+                min_value=0.0,
+                value=float(default_exposure),
+                step=1000.0,
+                key=f"exposure_{bu}",
+                help=f"Override the simulated individual risk exposure for {bu}."
             )
         with col2:
-            st.markdown(f"Simulated Risk Tolerance Factor for {bu}: **{bu_summary[bu_summary['Business Unit'] == bu]['Risk_Tolerance_Factor'].iloc[0]:.2f}**")
+            user_tolerance_factors[bu] = st.number_input(
+                f"Override {bu} Tolerance Factor",
+                min_value=0.1,
+                max_value=1.0,
+                value=float(default_tolerance_factor),
+                step=0.05,
+                key=f"tolerance_{bu}",
+                help=f"Override the simulated risk tolerance factor for {bu} (0.1 to 1.0)."
+            )
 
-    # Update bu_summary with user overrides
-    bu_summary['Individual_Risk_Exposure'] = bu_summary['Business Unit'].map(user_overrides)
+    # Prepare data for final calculations
+    final_df_data = []
+    for bu in business_units_list:
+        allocated_appetite_val = calculate_allocated_appetite(board_appetite, [allocation_percentages[bu]])[0]
+        individual_exposure_val = user_exposures[bu]
+        risk_tolerance_factor_val = user_tolerance_factors[bu]
+        absolute_risk_tolerance_val = allocated_appetite_val * risk_tolerance_factor_val
 
-
-    if allocation_valid:
-        st.markdown("""
-        ### 4. Risk Allocation & Status Summary
-        Here's a detailed breakdown of allocated appetite, absolute risk tolerance, and the
-        current risk status (Red, Amber, Green) for each business unit.
-        """)
-
-        # Calculate Allocated Appetite
-        allocated_appetites = calculate_allocated_appetite(board_appetite_actual, list(allocation_percentages.values()))
-        allocated_df = pd.DataFrame({
-            'Business Unit': business_units_list,
-            'Allocated Appetite': allocated_appetites
+        final_df_data.append({
+            "Business Unit": bu,
+            "Individual_Risk_Exposure": individual_exposure_val,
+            "Allocated Appetite": allocated_appetite_val,
+            "Absolute Risk Tolerance": absolute_risk_tolerance_val,
+            "Risk Tolerance Factor": risk_tolerance_factor_val
         })
 
-        # Merge Data
-        final_df = pd.merge(bu_summary, allocated_df, on='Business Unit')
+    final_df = pd.DataFrame(final_df_data)
 
-        # Calculate Absolute Risk Tolerance
-        final_df['Absolute Risk Tolerance'] = final_df['Allocated Appetite'] * final_df['Risk_Tolerance_Factor']
+    # Determine Risk Status
+    final_df['Risk Status'] = final_df.apply(
+        lambda row: determine_risk_status(
+            row['Individual_Risk_Exposure'],
+            row['Allocated Appetite'],
+            row['Absolute Risk Tolerance']
+        ),
+        axis=1
+    )
 
-        # Determine Risk Status
-        final_df['Risk Status'] = final_df.apply(
-            lambda row: determine_risk_status(
-                row['Individual_Risk_Exposure'],
-                row['Allocated Appetite'],
-                row['Absolute Risk Tolerance']
-            ), axis=1
-        )
+    # Define color mapping for RAG status
+    color_map = {'Green': 'green', 'Amber': 'orange', 'Red': 'red'}
 
-        # Summary Table
-        st.dataframe(final_df.style.applymap(
-            lambda x: 'background-color: #d4edda' if x == 'Green' else ('background-color: #fff3cd' if x == 'Amber' else 'background-color: #f8d7da'),
-            subset=['Risk Status']
-        ).format({
-            'Individual_Risk_Exposure': '${:,.0f}',
-            'Allocated Appetite': '${:,.0f}',
-            'Absolute Risk Tolerance': '${:,.0f}'
-        }))
+    st.header("4. Summary & Visualizations")
 
-        st.markdown("""
-        **Risk Status Logic:**
-        - **Green:** $\text{Exposure} \le \text{Allocated Appetite}$
-        - **Amber:** $\text{Allocated Appetite} < \text{Exposure} \le \text{Absolute Risk Tolerance}$
-        - **Red:** $\text{Exposure} > \text{Absolute Risk Tolerance}$
-        """)
+    st.subheader("Business Unit Risk Summary")
+    st.dataframe(final_df.style.apply(lambda x: [f'background-color: {color_map[v]}' for v in x]
+                                      if x.name == 'Risk Status' else [''] * len(x), axis=1))
 
-        st.markdown("""
-        ### 5. Visualizations
-        """)
+    st.subheader("Business Unit Risk Exposure vs. Appetite & Tolerance")
+    fig_bar = px.bar(
+        final_df,
+        x='Business Unit',
+        y=['Individual_Risk_Exposure', 'Allocated Appetite', 'Absolute Risk Tolerance'],
+        barmode='group',
+        title="Business Unit Risk Exposure vs. Appetite & Tolerance",
+        labels={'value': 'Amount ($)', 'variable': 'Metric'},
+        color='Risk Status',
+        color_discrete_map=color_map # Apply RAG colors to exposure bars
+    )
+    # Customize individual risk exposure bars to reflect RAG status more explicitly
+    # This part requires more advanced plotly, for simplicity, we map color based on the 'color' argument above.
+    # If explicit color mapping per bar based on 'Risk Status' is needed, it would involve modifying traces.
+    # px.bar will handle this correctly for the `Individual_Risk_Exposure` group if `color` is based on `Risk Status`.
+    st.plotly_chart(fig_bar, use_container_width=True)
 
-        # Comparison Bar Chart
-        st.subheader("Business Unit Risk Exposure vs. Appetite & Tolerance")
-        # Define color map for RAG status
-        rag_color_map = {'Green': 'green', 'Amber': 'orange', 'Red': 'red'}
+    st.subheader("Hierarchical Risk Appetite Allocation and Exposure")
+    # Prepare data for treemap: Add a 'Firm' level for the root
+    treemap_df = final_df.copy()
+    treemap_df['Parent'] = 'Firm'
+    treemap_df['Amount'] = treemap_df['Allocated Appetite']
 
-        fig_bar = px.bar(
-            final_df,
-            x='Business Unit',
-            y=['Individual_Risk_Exposure', 'Allocated Appetite', 'Absolute Risk Tolerance'],
-            barmode='group',
-            title='Business Unit Risk Exposure vs. Appetite & Tolerance',
-            labels={
-                'value': 'Amount ($)',
-                'variable': 'Metric'
-            },
-            color='Risk Status',
-            color_discrete_map=rag_color_map,
-            hover_data={
-                'Individual_Risk_Exposure': ':, .0f',
-                'Allocated Appetite': ':, .0f',
-                'Absolute Risk Tolerance': ':, .0f',
-                'Risk Status': True
-            }
-        )
-        # Update layout for better readability and potentially larger font
-        fig_bar.update_layout(
-            legend_title_text='Metric',
-            font=dict(size=12),
-            height=500
-        )
-        st.plotly_chart(fig_bar, use_container_width=True)
+    # For hierarchical visualization, it's often better to show the allocated appetite first, then potentially exposures.
+    # Let's create a DataFrame suitable for a treemap showing Board Appetite -> Allocated Appetite
+    # To also show exposure, we might need a multi-level treemap or a different visualization.
+    # For simplicity, let's show allocated appetite and highlight exposure status.
 
-        # Hierarchical Visualization (Treemap)
-        st.subheader("Hierarchical Risk Appetite Allocation and Exposure")
-        # For treemap, we need a hierarchical structure
-        # Create a dataframe suitable for treemap
-        treemap_data = pd.DataFrame({
-            'id': ['Firm'] + business_units_list,
-            'parent': ['', 'Firm', 'Firm', 'Firm', 'Firm'],
-            'value': [board_appetite_actual] + allocated_appetites,
-            'name': ['Board Appetite'] + [f"{bu} ({allocation_percentages[bu]}%)" for bu in business_units_list],
-            'type': ['Board Appetite'] + ['Allocated Appetite'] * len(business_units_list)
+    # Option 1: Treemap showing Allocation
+    treemap_data = [
+        {'id': 'Firm', 'parent': '', 'name': 'Board Appetite', 'value': board_appetite, 'type': 'Appetite'},
+    ]
+    for idx, row in final_df.iterrows():
+        treemap_data.append({
+            'id': row['Business Unit'],
+            'parent': 'Firm',
+            'name': f"{row['Business Unit']} (Allocated: ${row['Allocated Appetite']:.0f}, Exp: ${row['Individual_Risk_Exposure']:.0f}, Status: {row['Risk Status']})",
+            'value': row['Allocated Appetite'], # Size by allocated appetite
+            'type': 'Allocated Appetite',
+            'status': row['Risk Status'] # Add status for coloring
         })
+    treemap_flat_df = pd.DataFrame(treemap_data)
 
-        # Add individual risk exposure for a more detailed view if needed, but for simplicity,
-        # let's stick to showing allocation and exposure as a color on the allocated part
-        # A more complex treemap could show exposure as a sub-segment.
-        # For this, let's use a simpler approach of mapping status colors to allocated appetite.
-        final_df['Exposure_vs_Appetite'] = final_df['Individual_Risk_Exposure'] / final_df['Allocated Appetite']
+    fig_treemap = px.treemap(
+        treemap_flat_df,
+        names='name',
+        parents='parent',
+        values='value',
+        color='status', # Color by risk status of the business unit
+        color_discrete_map={'(?)': 'lightgrey', 'Green': 'green', 'Amber': 'orange', 'Red': 'red'},
+        title="Hierarchical Risk Appetite Allocation and Exposure",
+        hover_data=['value'],
+    )
+    st.plotly_chart(fig_treemap, use_container_width=True)
 
-        # Add aggregated exposure to treemap data (optional, for color or size if represented)
-        # Let's add exposure as a separate series or use it for color if the treemap supports it directly
-        # For plotly treemap, value determines size, color determines color.
-        # Let's create a combined df for the treemap to represent allocated appetite and color by status
-        treemap_combined_df = final_df[['Business Unit', 'Allocated Appetite', 'Risk Status', 'Individual_Risk_Exposure']].copy()
-        treemap_combined_df.rename(columns={'Business Unit': 'Labels', 'Allocated Appetite': 'Values'}, inplace=True)
-        treemap_combined_df['Parents'] = 'Firm'
-        treemap_combined_df.loc[len(treemap_combined_df)] = ['Firm', board_appetite_actual - treemap_combined_df['Values'].sum(), 'Green', 0, ''] # Remaining from total
-        treemap_combined_df.loc[len(treemap_combined_df)] = ['Total Board Appetite', board_appetite_actual, 'Green', 0, ''] # Root
 
-        fig_treemap = px.treemap(
-            final_df,
-            path=[px.Constant("Board Appetite"), 'Business Unit'],
-            values='Allocated Appetite',
-            color='Risk Status',
-            color_discrete_map={
-                'Green': 'green',
-                'Amber': 'orange',
-                'Red': 'red',
-                '(?)': 'lightgrey' # For cases where status might be unknown
-            },
-            title="Hierarchical Risk Appetite Allocation and Exposure",
-            custom_data=['Individual_Risk_Exposure', 'Absolute Risk Tolerance'] # For hover info
-        )
-        fig_treemap.update_traces(
-            root_color="lightgrey",
-            marker_line_width=1,
-            marker_line_color='black',
-            textinfo="label+value+percent entry"
-        )
-        fig_treemap.update_layout(margin=dict(t=50, l=0, r=0, b=0), font=dict(size=12))
-        fig_treemap.data[0].texttemplate = "%{label}<br>%{value:$,.0f}<br>%{percentParent:.1%}"
-        fig_treemap.data[0].hovertemplate = (
-            "<b>Business Unit:</b> %{label}<br>"
-            "<b>Allocated Appetite:</b> %{value:$,.0f}<br>"
-            "<b>Individual Exposure:</b> %{customdata[0]:$,.0f}<br>"
-            "<b>Absolute Tolerance:</b> %{customdata[1]:$,.0f}<br>"
-            "<b>Risk Status:</b> %{color}<extra></extra>"
-        )
+    st.subheader("Overall Firm Risk Profile Summary")
+    total_firm_risk_profile = aggregate_firm_risk(final_df['Individual_Risk_Exposure'])
 
-        st.plotly_chart(fig_treemap, use_container_width=True)
+    st.metric(label="Board Appetite", value=f"${board_appetite:,.2f}")
+    st.metric(label="Total Firm Risk Profile (Aggregated Exposure)", value=f"${total_firm_risk_profile:,.2f}")
 
-        st.markdown("""
-        ### 6. Overall Firm Risk Profile Summary
-        """)
-        # Overall Firm Risk Profile Summary
-        total_firm_risk_profile = aggregate_firm_risk(final_df['Individual_Risk_Exposure'].tolist())
-
-        st.metric(label="Board Appetite", value=f"${board_appetite_actual:,.0f}")
-        st.metric(label="Total Firm Risk Profile", value=f"${total_firm_risk_profile:,.0f}")
-
-        if total_firm_risk_profile <= board_appetite_actual:
-            st.success(f"**Conclusion:** The Total Firm Risk Profile (${total_firm_risk_profile:,.0f}) is **within** the Board Appetite (${board_appetite_actual:,.0f}).")
-        else:
-            st.error(f"**Conclusion:** The Total Firm Risk Profile (${total_firm_risk_profile:,.0f}) **exceeds** the Board Appetite (${board_appetite_actual:,.0f}). Immediate action may be required.")
+    if total_firm_risk_profile <= board_appetite:
+        st.success(f"Conclusion: The Total Firm Risk Profile (${total_firm_risk_profile:,.2f}) is **within** the Board Appetite (${board_appetite:,.2f}). This indicates the firm's overall risk exposure is currently acceptable.")
     else:
-        st.warning("Please resolve allocation percentage validation errors to see the full analysis.")
+        st.error(f"Conclusion: The Total Firm Risk Profile (${total_firm_risk_profile:,.2f}) **exceeds** the Board Appetite (${board_appetite:,.2f}). This suggests the firm's overall risk exposure is currently too high and requires attention.")
+
