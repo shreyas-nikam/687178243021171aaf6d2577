@@ -1,4 +1,3 @@
-```markdown
 # Technical Specification for Jupyter Notebook: Risk Appetite & Allocation Modeler
 
 This specification details the structure, content, and functionality of a Jupyter Notebook designed to explore the fundamental concepts of risk appetite and its allocation within an organization, consistent with the PRMIA Operational Risk Manager Handbook.
@@ -215,6 +214,3 @@ The notebook will be structured logically, progressing from initial setup and th
     *   Allocated Appetite Calculation: $$ \text{Allocated Appetite}_i = \text{Board Appetite} \times \text{Allocation Percentage}_i $$
     *   Total Firm Risk Profile Aggregation: $$ \text{Total Firm Risk Profile} = \sum_{i=1}^{n} \text{Individual Risk Exposure}_i $$
     *   Risk Status (RAG) is derived from comparing `Individual Risk Exposure` against `Allocated Appetite` and `Risk Tolerance`.
-
----
-```
