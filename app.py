@@ -1,10 +1,10 @@
 
 import streamlit as st
 
-st.set_page_config(page_title="QuLab", layout="wide")
+st.set_page_config(page_title="QuLab: Risk Appetite & Allocation Modeler", layout="wide")
 st.sidebar.image("https://www.quantuniversity.com/assets/img/logo5.jpg")
 st.sidebar.divider()
-st.title("QuLab")
+st.title("QuLab: Risk Appetite & Allocation Modeler")
 st.divider()
 st.markdown("""
 In this lab, we explore the core concepts of **Risk Appetite & Allocation** within an organizational context.
@@ -15,6 +15,14 @@ This interactive application allows you to:
 - Understand how individual risk exposures aggregate to form the `Total Firm Risk Profile`.
 - Compare the `Total Firm Risk Profile` with the `Board Appetite` to assess overall firm health.
 
+
+### Glossary of Terms:
+    
+- **Risk Appetite:** The amount and type of risk that an organization is willing to take in order to meet its strategic objectives.
+- **Risk Tolerance:** The acceptable level of variation around the risk appetite.
+- **Key Risk Indicators (KRIs):** Metrics used to provide an early signal of increasing risk exposures.
+- **Risk Mitigation:** Actions taken to reduce the likelihood or impact of a risk.
+    
 ### Key Concepts:
 - **Board Appetite:** The maximum level of risk a firm is willing to accept to achieve its strategic objectives.
 - **Allocated Appetite:** The portion of the Board Appetite assigned to specific business units or functions.
@@ -33,13 +41,6 @@ page = st.sidebar.selectbox(label="Navigation", options=["Risk Appetite Modeler"
 if page == "Risk Appetite Modeler":
     from application_pages.page1 import run_page1
     run_page1()
-elif page == "Page 2":
-    from application_pages.page2 import run_page2
-    run_page2()
-elif page == "Page 3":
-    from application_pages.page3 import run_page3
-    run_page3()
-
 
 # License
 st.caption('''

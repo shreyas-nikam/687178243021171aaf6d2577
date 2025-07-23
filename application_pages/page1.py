@@ -54,13 +54,18 @@ def determine_risk_status(exposure, allocated_appetite, tolerance):
         return 'Red'
 
 def run_page1():
-    st.header("Risk Appetite & Allocation Modeler")
+    
+    
 
     # Business Units Definition
     business_units_list = ['Retail Banking', 'Investment Banking', 'Asset Management', 'IT Operations']
+    st.subheader("1. Define Board Appetite and Allocation")
+    st.markdown(
+        "Set the *maximum acceptable annual loss* for the entire firm, then apportion that limit to each business unit. "
+        "The sum of allocations must equal **100%**."
+    )
 
-    # 1. Sidebar/Main Area Inputs
-    st.subheader("Define Parameters")
+
     col1, col2 = st.columns(2)
 
     with col1:
@@ -178,10 +183,14 @@ def run_page1():
 
     # 5. Calculate Total Firm Risk
     total_firm_risk = aggregate_firm_risk(final_df['Individual_Risk_Exposure'])
-
+    
     st.divider()
     st.subheader("Summary of Risk Allocation & Status")
-
+    st.markdown(
+        "Green means exposure is **within** allocated appetite.  \n"
+        "Amber means it **exceeds appetite** but is **within tolerance**.  \n"
+        "Red means it **breaches tolerance** – management action required."
+    )
     # 2.3. Visualization Components - Summary Table
     # Define color mapping for RAG status in the table
     def color_status(val):
@@ -270,11 +279,15 @@ def run_page1():
 
     # 2.3. Overall Firm Risk Profile Summary
     st.subheader("Overall Firm Risk Profile Summary")
-    st.metric(label="Board Appetite", value=f"${board_appetite:,.2f}")
+    st.metric(label="Board's Appetite", value=f"${board_appetite:,.2f}")
     st.metric(label="Total Firm Risk Profile (Aggregated Exposure)", value=f"${total_firm_risk:,.2f}")
 
     if total_firm_risk <= board_appetite:
-        st.success(f"The Total Firm Risk Profile (${total_firm_risk:,.2f}) is within the Board Appetite (${board_appetite:,.2f}).")
+        st.success(f"The Total Firm Risk Profile (\${total_firm_risk:,.2f}) is within the Board's Appetite (\${board_appetite:,.2f}).")
     else:
-        st.error(f"The Total Firm Risk Profile (${total_firm_risk:,.2f}) exceeds the Board Appetite (${board_appetite:,.2f}) by ${total_firm_risk - board_appetite:,.2f}.")
+        st.error(f"The Total Firm Risk Profile (\${total_firm_risk:,.2f}) exceeds the Board's Appetite (\${board_appetite:,.2f}) by \${total_firm_risk - board_appetite:,.2f}.")
 
+    st.markdown("""### Further Reading:
+
+- [Basel Committee on Banking Supervision](https://www.bis.org/bcbs/index.htm)
+    """)
