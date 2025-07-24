@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -55,12 +54,15 @@ def determine_risk_status(exposure, allocated_appetite, tolerance):
 
 def run_page1():
     
+    # Helpful tip for beginners
+    st.info("**Pro Tip**: Start by adjusting the Board Appetite slider and watch how all calculations update in real-time!")
+    
     # Business Units Definition
     business_units_list = ['Retail Banking', 'Investment Banking', 'Asset Management', 'IT Operations']
     st.subheader("1. Define Board Appetite and Allocation")
     st.markdown(
         "Set the *maximum acceptable annual loss* for the entire firm, then apportion that limit to each business unit. "
-        "The sum of allocations must equal **100%**."
+        "The sum of allocations must equal **100%**. Think of this as dividing your risk budget among different departments."
     )
 
 
@@ -137,7 +139,10 @@ def run_page1():
 
 
     st.subheader("Individual Risk Exposure Overrides (Optional)")
-    st.markdown("View or override the simulated individual risk exposure for each unit (e.g., actual annual losses).")
+    st.markdown(
+        "View or override the simulated individual risk exposure for each unit (e.g., actual annual losses). "
+        "**Try this**: Change one value to see how it affects the risk status and visualizations below!"
+    )
     user_overrides = {}
     for idx, bu in enumerate(business_units_list):
         default_exposure = bu_summary.loc[bu_summary['Business Unit'] == bu, 'Individual_Risk_Exposure'].iloc[0]
@@ -200,7 +205,7 @@ def run_page1():
             return 'background-color: #f8d7da; color: #721c24' # Light red, dark red text
         return ''
 
-    styled_df = final_df.style.applymap(color_status, subset=['Risk Status'])
+    styled_df = final_df.style.map(color_status, subset=['Risk Status'])
     st.dataframe(styled_df, hide_index=True)
 
 
@@ -281,9 +286,9 @@ def run_page1():
     st.metric(label="Total Firm Risk Profile (Aggregated Exposure)", value=f"${total_firm_risk:,.2f}")
 
     if total_firm_risk <= board_appetite:
-        st.success(f"The Total Firm Risk Profile (\${total_firm_risk:,.2f}) is within the Board's Appetite (\${board_appetite:,.2f}).")
+        st.success(f"The Total Firm Risk Profile (${total_firm_risk:,.2f}) is within the Board's Appetite (${board_appetite:,.2f}).")
     else:
-        st.error(f"The Total Firm Risk Profile (\${total_firm_risk:,.2f}) exceeds the Board's Appetite (\${board_appetite:,.2f}) by \${total_firm_risk - board_appetite:,.2f}.")
+        st.error(f"The Total Firm Risk Profile (${total_firm_risk:,.2f}) exceeds the Board's Appetite (${board_appetite:,.2f}) by ${total_firm_risk - board_appetite:,.2f}.")
 
     st.markdown("""### Further Reading:
 
