@@ -55,8 +55,6 @@ def determine_risk_status(exposure, allocated_appetite, tolerance):
 
 def run_page1():
     
-    
-
     # Business Units Definition
     business_units_list = ['Retail Banking', 'Investment Banking', 'Asset Management', 'IT Operations']
     st.subheader("1. Define Board Appetite and Allocation")

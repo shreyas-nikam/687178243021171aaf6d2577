@@ -36,7 +36,7 @@ This interactive application allows you to:
 This model helps in understanding the hierarchical breakdown of risk appetite and the aggregation of risk exposures, providing a visual comparison of risk against limits using a Red, Amber, Green (RAG) status system.
 """)
 
-page = st.sidebar.selectbox(label="Navigation", options=["Risk Appetite Modeler", "Page 2", "Page 3"])
+page = st.sidebar.selectbox(label="Navigation", options=["Risk Appetite Modeler"])
 
 if page == "Risk Appetite Modeler":
     from application_pages.page1 import run_page1
