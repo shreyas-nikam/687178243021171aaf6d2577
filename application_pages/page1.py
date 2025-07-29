@@ -283,12 +283,12 @@ def run_page1():
     # 2.3. Overall Firm Risk Profile Summary
     st.subheader("Overall Firm Risk Profile Summary")
     st.metric(label="Board's Appetite", value=f"${board_appetite:,.2f}")
-    st.metric(label="Total Firm Risk Profile (Aggregated Exposure)", value=f"${total_firm_risk:,.2f}")
+    st.metric(label="Total Firm Risk Profile (Aggregated Exposure)", value=f"{total_firm_risk:,.2f}")
 
     if total_firm_risk <= board_appetite:
-        st.success(f"The Total Firm Risk Profile (${total_firm_risk:,.2f}) is within the Board's Appetite (${board_appetite:,.2f}).")
+        st.success(f"The Total Firm Risk Profile ({total_firm_risk:,.2f}) is within the Board's Appetite ({board_appetite:,.2f}).")
     else:
-        st.error(f"The Total Firm Risk Profile (${total_firm_risk:,.2f}) exceeds the Board's Appetite (${board_appetite:,.2f}) by ${total_firm_risk - board_appetite:,.2f}.")
+        st.error(f"The Total Firm Risk Profile ({total_firm_risk:,.2f}) exceeds the Board's Appetite ({board_appetite:,.2f}) by {total_firm_risk - board_appetite:,.2f}.")
 
     st.markdown("""### Further Reading:
 
