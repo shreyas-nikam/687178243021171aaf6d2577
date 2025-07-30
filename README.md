@@ -1,10 +1,6 @@
-Here's a comprehensive `README.md` file for your Streamlit application lab project.
-
----
 
 # QuLab: Risk Appetite & Allocation Modeler
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-streamlit-app-url.com) <!-- Replace with your actual deployed app URL -->
 
 ## 1. Project Title and Description
 
